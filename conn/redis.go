@@ -28,5 +28,8 @@ func ConnectRedis() {
 }
 
 func Redis() *redis.Client {
+	if redisClient == nil {
+		ConnectRedis()
+	}
 	return redisClient
 }

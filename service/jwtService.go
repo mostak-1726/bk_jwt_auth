@@ -2,8 +2,6 @@ package service
 
 import (
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/mostak-1726/bk_jwt_auth/config"
-	"github.com/mostak-1726/bk_jwt_auth/consts"
 	"time"
 )
 
@@ -12,11 +10,7 @@ type jwtCustomClaims struct {
 	jwt.RegisteredClaims
 }
 
-func GenerateJwt(wNumber string, exp time.Time) (string, error) {
-	jts := config.App().JwtTokenSecret
-	if jts == "" {
-		jts = consts.JwtTokenSecret
-	}
+func GenerateJwt(wNumber string, exp time.Time, secrete string) (string, error) {
 
 	claims := &jwtCustomClaims{
 		wNumber,
@@ -27,7 +21,7 @@ func GenerateJwt(wNumber string, exp time.Time) (string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	t, err := token.SignedString([]byte(jts))
+	t, err := token.SignedString([]byte(secrete))
 	if err != nil {
 		return "", err
 	}

@@ -13,12 +13,11 @@ import (
 	"net/http"
 )
 
-var e = echo.New()
-
 func main() {
+	var e = echo.New()
 	config.LoadConfig()
 	conn.ConnectRedis()
-	auth.RegisterRoutes(e)
+	registerRoutes(e)
 	// echo middlewares
 	e.Use(middleware.CORS())
 	e.Use(middleware.Secure())
@@ -28,8 +27,7 @@ func main() {
 	e.Pre(middleware.RemoveTrailingSlash())
 	e.Use(echojwt.WithConfig(getEchoJwtConfig()))
 
-	port := config.App().Port
-	e.Logger.Fatal(e.Start(":" + port))
+	e.Logger.Fatal(e.Start(":" + "8090"))
 }
 
 func getEchoJwtConfig() echojwt.Config {
@@ -38,7 +36,11 @@ func getEchoJwtConfig() echojwt.Config {
 
 	return echojwt.Config{
 		Skipper: func(c echo.Context) bool {
-			return slices.Contains(config.App().JwtSkipper, c.Request().URL.Path)
+			route := []string{
+				"/bkash/auth",
+				"bkash/auth/verify",
+			}
+			return slices.Contains(route, c.Request().URL.Path)
 		},
 		SigningKey: []byte(jts),
 		ErrorHandler: func(c echo.Context, err error) error {
@@ -52,4 +54,12 @@ func getEchoJwtConfig() echojwt.Config {
 			c.Set("wallet_number", wNumber)
 		},
 	}
+}
+func registerRoutes(e *echo.Echo) {
+	config.LoadConfig()
+	conn.ConnectRedis()
+	handler := auth.NewCapAuthIntegrator("mostak", "12345", 3600, "14580760-b5d9-42d7-aa3a-51d20caeff6a", "testSecret")
+	e.POST("/bkash/auth", handler.GenerateAuthToken)
+	e.POST("/bkash/auth/verify", handler.VerifyAuthToken)
+
 }

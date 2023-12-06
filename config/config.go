@@ -13,18 +13,6 @@ import (
 	"net/http"
 )
 
-type AppConfig struct {
-	Name                     string
-	Port                     string
-	AuthTokenExpiryInSeconds int
-	JwtTokenExpiryInSeconds  int
-	JwtTokenSecret           string
-	TestCustomerAppToken     string
-	JwtSkipper               []string
-	TokenGenerationRoute     string
-	TokenVerifyRoute         string
-}
-
 type RedisConfig struct {
 	Host string
 	Port string
@@ -34,19 +22,10 @@ type RedisConfig struct {
 }
 
 type Config struct {
-	App   *AppConfig
 	Redis *RedisConfig
 }
 
 var config Config
-
-func GetAll() Config {
-	return config
-}
-
-func App() *AppConfig {
-	return config.App
-}
 
 func Redis() *RedisConfig {
 	return config.Redis
@@ -86,17 +65,6 @@ func LoadConfig() {
 }
 
 func setDefaultConfig() {
-	config.App = &AppConfig{
-		Name:                     "bkash-jwt-auth",
-		Port:                     "8090",
-		AuthTokenExpiryInSeconds: 30000,
-		JwtTokenExpiryInSeconds:  30000,
-		JwtTokenSecret:           "AwesomeTokenSecret",
-		TestCustomerAppToken:     "14580760-b5d9-42d7-aa3a-51d20caeff6a",
-		TokenGenerationRoute:     "/bkash/auth",
-		TokenVerifyRoute:         "/bkash/auth/verify",
-		JwtSkipper:               []string{"/bkash/auth", "/bkash/auth/verify"},
-	}
 	config.Redis = &RedisConfig{
 		Host: "127.0.0.1",
 		Port: "6379",
@@ -107,10 +75,7 @@ func setDefaultConfig() {
 }
 
 func GetEchoJwtConfig() echojwt.Config {
-	jts := App().JwtTokenSecret
-	if jts == "" {
-		jts = "AwesomeTokenSecret"
-	}
+	jts := "AwesomeTokenSecret"
 
 	return echojwt.Config{
 		Skipper: func(c echo.Context) bool {
