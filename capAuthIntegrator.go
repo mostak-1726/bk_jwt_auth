@@ -2,6 +2,7 @@ package auth
 
 import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
+	"github.com/go-redis/redis"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
 	"net/http"
@@ -16,6 +17,7 @@ type CapAuthIntegrator struct {
 	JwtTokenSecrete         string
 	JwtTokenExpiryInSeconds int
 	TestCustomerAppToken    string
+	RedisClient             *redis.Client
 }
 
 func (ci *CapAuthIntegrator) GenerateAuthToken(c echo.Context) error {
@@ -140,7 +142,7 @@ func verifyTestAuthToken(c echo.Context, req AuthTokenVerifyRequest, expiresAt t
 }
 
 func NewCapAuthIntegrator(config Config) CapAuthIntegrator {
-	connectRedis(config.RedisConfig)
+	setRedisClient(config.RedisClient)
 	return CapAuthIntegrator{
 		UserName:                config.UserName,
 		Password:                config.Password,

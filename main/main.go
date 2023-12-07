@@ -66,7 +66,7 @@ func registerRoutes(e *echo.Echo) {
 		ExpiryInSec:          3600,
 		TestCustomerAppToken: "14580760-b5d9-42d7-aa3a-51d20caeff6a",
 		JwtTokenSecrete:      "testSecret",
-		RedisConfig:          conf,
+		RedisClient:          conf,
 	}
 	handler := auth.NewCapAuthIntegrator(c)
 	e.POST("/bkash/auth", handler.GenerateAuthToken)

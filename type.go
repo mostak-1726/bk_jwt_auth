@@ -2,6 +2,7 @@ package auth
 
 import (
 	v "github.com/go-ozzo/ozzo-validation/v4"
+	"github.com/go-redis/redis"
 	"time"
 )
 
@@ -45,18 +46,11 @@ func (q AuthTokenVerifyRequest) Validate() error {
 	)
 }
 
-type RedisConfig struct {
-	Host string
-	Port string
-	Pass string
-	Db   int
-	Ttl  int // seconds
-}
 type Config struct {
 	UserName             string
 	Password             string
 	ExpiryInSec          int
 	JwtTokenSecrete      string
 	TestCustomerAppToken string
-	RedisConfig          RedisConfig
+	RedisClient          *redis.Client
 }
