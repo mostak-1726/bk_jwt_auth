@@ -1,4 +1,4 @@
-package service
+package auth
 
 import (
 	"github.com/golang-jwt/jwt/v5"
@@ -10,7 +10,7 @@ type jwtCustomClaims struct {
 	jwt.RegisteredClaims
 }
 
-func GenerateJwt(wNumber string, exp time.Time, secrete string) (string, error) {
+func generateJwt(wNumber string, exp time.Time, secrete string) (string, error) {
 
 	claims := &jwtCustomClaims{
 		wNumber,

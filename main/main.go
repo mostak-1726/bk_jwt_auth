@@ -7,7 +7,6 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	auth "github.com/mostak-1726/bk_jwt_auth"
-	_type "github.com/mostak-1726/bk_jwt_auth/type"
 	"golang.org/x/exp/slices"
 	"net/http"
 )
@@ -53,15 +52,15 @@ func getEchoJwtConfig() echojwt.Config {
 	}
 }
 func registerRoutes(e *echo.Echo) {
-	conf := _type.RedisConfig{
+	conf := auth.RedisConfig{
 		Host: "127.0.0.1",
 		Port: "6379",
 		Pass: "secret_redis",
 		Db:   1,
 		Ttl:  3600,
 	}
-	//conn.ConnectRedis(conf)
-	c := _type.Config{
+	//conn.connectRedis(conf)
+	c := auth.Config{
 		UserName:             "mostak",
 		Password:             "12345",
 		ExpiryInSec:          3600,

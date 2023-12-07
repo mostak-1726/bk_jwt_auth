@@ -4,9 +4,6 @@ import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
-	"github.com/mostak-1726/bk_jwt_auth/conn"
-	"github.com/mostak-1726/bk_jwt_auth/service"
-	"github.com/mostak-1726/bk_jwt_auth/type"
 	"net/http"
 	"time"
 )
@@ -14,8 +11,8 @@ import (
 type CapAuthIntegrator struct {
 	UserName                string
 	Password                string
-	Request                 _type.AuthTokenRequest
-	AuthVerifyReq           _type.AuthTokenVerifyRequest
+	Request                 AuthTokenRequest
+	AuthVerifyReq           AuthTokenVerifyRequest
 	JwtTokenSecrete         string
 	JwtTokenExpiryInSeconds int
 	TestCustomerAppToken    string
@@ -29,27 +26,27 @@ func (ci *CapAuthIntegrator) GenerateAuthToken(c echo.Context) error {
 	}
 
 	if err = ci.Request.Validate(); err != nil {
-		return c.JSON(http.StatusUnprocessableEntity, _type.Response{
+		return c.JSON(http.StatusUnprocessableEntity, Response{
 			Success: false,
 			Message: "Invalid request",
 			Errors:  err,
 		})
 	}
 	if ci.Request.Username != ci.UserName || ci.Request.Password != ci.Password {
-		return c.JSON(http.StatusUnprocessableEntity, _type.Response{
+		return c.JSON(http.StatusUnprocessableEntity, Response{
 			Success: false,
 			Message: "Invalid userName or Password",
 			Errors:  err,
 		})
 	}
 
-	token := service.GenerateAndStoreAuthToken(ci.Request.MobileNumber, ci.JwtTokenExpiryInSeconds)
+	token := generateAndStoreAuthToken(ci.Request.MobileNumber, ci.JwtTokenExpiryInSeconds)
 	updateTime := time.Now().Format("02-01-2006 15:04:05")
 
-	return c.JSON(http.StatusOK, _type.Response{
+	return c.JSON(http.StatusOK, Response{
 		Success: true,
 		Message: "Auth token created successfully",
-		Data: _type.AuthTokenResponseData{
+		Data: AuthTokenResponseData{
 			IdToken:    token,
 			UpdateTime: updateTime,
 		},
@@ -64,7 +61,7 @@ func (ci *CapAuthIntegrator) VerifyAuthToken(c echo.Context) error {
 	}
 
 	if err = ci.AuthVerifyReq.Validate(); err != nil {
-		return c.JSON(http.StatusUnprocessableEntity, _type.Response{
+		return c.JSON(http.StatusUnprocessableEntity, Response{
 			Success: false,
 			Message: "Invalid request",
 			Errors:  err,
@@ -79,52 +76,52 @@ func (ci *CapAuthIntegrator) VerifyAuthToken(c echo.Context) error {
 		return verifyTestAuthToken(c, ci.AuthVerifyReq, expiresAt, ci.JwtTokenSecrete)
 	}
 
-	vt := service.VerifyAuthTokenService(ci.AuthVerifyReq.Token)
+	vt := verifyAuthTokenService(ci.AuthVerifyReq.Token)
 	if !vt {
-		return c.JSON(http.StatusBadRequest, _type.Response{
+		return c.JSON(http.StatusBadRequest, Response{
 			Success: false,
 			Message: "Invalid token",
 		})
 	}
 
-	wNumber := service.GetWalletNumberAndRemoveToken(ci.AuthVerifyReq.Token)
-	token, er := service.GenerateJwt(wNumber, expiresAt, ci.JwtTokenSecrete)
+	wNumber := getWalletNumberAndRemoveToken(ci.AuthVerifyReq.Token)
+	token, er := generateJwt(wNumber, expiresAt, ci.JwtTokenSecrete)
 	if er != nil {
 		log.Error("Failed to generate jwt token", er)
-		return c.JSON(http.StatusBadRequest, _type.Response{
+		return c.JSON(http.StatusBadRequest, Response{
 			Success: false,
 			Message: "Failed to generate jwt token",
 		})
 	}
 
-	return c.JSON(http.StatusOK, _type.Response{
+	return c.JSON(http.StatusOK, Response{
 		Success: true,
 		Message: "Auth token verified successfully",
-		Data: _type.AccessTokenResponseData{
+		Data: AccessTokenResponseData{
 			AccessToken: token,
 			ExpiresAt:   expiresAt,
 		},
 	})
 }
 
-func verifyTestAuthToken(c echo.Context, req _type.AuthTokenVerifyRequest, expiresAt time.Time, secrete string) error {
+func verifyTestAuthToken(c echo.Context, req AuthTokenVerifyRequest, expiresAt time.Time, secrete string) error {
 	errs := validation.Errors{
 		"mobile_number": validation.Validate(req.MobileNumber, validation.Required, validation.Length(11, 11)),
 	}.Filter()
 
 	if errs != nil {
-		return c.JSON(http.StatusUnprocessableEntity, _type.Response{
+		return c.JSON(http.StatusUnprocessableEntity, Response{
 			Success: false,
 			Message: "Invalid request",
 			Errors:  errs,
 		})
 	}
 
-	token, er := service.GenerateJwt(req.MobileNumber, expiresAt, secrete)
+	token, er := generateJwt(req.MobileNumber, expiresAt, secrete)
 	if er != nil {
 		if er != nil {
 			log.Error("Failed to generate jwt token", er)
-			return c.JSON(http.StatusBadRequest, _type.Response{
+			return c.JSON(http.StatusBadRequest, Response{
 				Success: false,
 				Message: "Failed to generate jwt token",
 			})
@@ -132,18 +129,18 @@ func verifyTestAuthToken(c echo.Context, req _type.AuthTokenVerifyRequest, expir
 
 	}
 
-	return c.JSON(http.StatusOK, _type.Response{
+	return c.JSON(http.StatusOK, Response{
 		Success: true,
 		Message: "Auth token verified successfully",
-		Data: _type.AccessTokenResponseData{
+		Data: AccessTokenResponseData{
 			AccessToken: token,
 			ExpiresAt:   expiresAt,
 		},
 	})
 }
 
-func NewCapAuthIntegrator(config _type.Config) CapAuthIntegrator {
-	conn.ConnectRedis(config.RedisConfig)
+func NewCapAuthIntegrator(config Config) CapAuthIntegrator {
+	connectRedis(config.RedisConfig)
 	return CapAuthIntegrator{
 		UserName:                config.UserName,
 		Password:                config.Password,
