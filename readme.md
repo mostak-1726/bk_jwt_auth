@@ -1,6 +1,6 @@
-This package build on JWT authentication plugin and echo framework. It exposes two method - GenerateAuthToken and VerifyAuthToken
-GenerateAuthToken method verify requested userName and password against configured username and password and return an id_token 
-VerifyAuthToken method verify the generated previously and provide jwtToken for further communication
+This package builds on JWT authentication plugin and echo framework. It exposes two methods - GenerateAuthToken and VerifyAuthToken
+GenerateAuthToken method verifies the requested username and password against the configured username and password and returns an id_token 
+VerifyAuthToken method verifies the generated previously and provides jwtToken for further communication
 
 
 To Install run the following command -  
@@ -25,8 +25,20 @@ c := _type.Config{
         RedisConfig:          conf,
 }
 handler := auth.NewCapAuthIntegrator(c)
-and then handler method in router as follows - 
+and then the handler method in the router as follows - 
 e := echo.New()
 e.POST("/bkash/auth", handler.GenerateAuthToken)
 e.POST("/bkash/auth/verify", handler.VerifyAuthToken)
+/bksh/auth endpoint needs to request with following params - 
+
+{
+    "username": "mostak",
+    "password": "12345",
+    "mobile_number": "01799021432"
+}
+/bkash/auth/verify endpoint needs to request with following params - 
+{
+    "token": "6c843576-5ac0-4ba9-8f44-6265d3e18039",
+    "mobile_number": "01711082738"
+}
 Note: Don't forget to add those route to jwt authSkipper 
