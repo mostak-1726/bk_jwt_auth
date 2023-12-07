@@ -2,14 +2,13 @@ package conn
 
 import (
 	"github.com/go-redis/redis"
-	"github.com/mostak-1726/bk_jwt_auth/config"
+	_type "github.com/mostak-1726/bk_jwt_auth/type"
 	"log"
 )
 
 var redisClient *redis.Client
 
-func ConnectRedis() {
-	conf := config.Redis()
+func ConnectRedis(conf _type.RedisConfig) {
 
 	log.Print("connecting to redis at ", conf.Host, ":", conf.Port, "...")
 
@@ -28,8 +27,5 @@ func ConnectRedis() {
 }
 
 func Redis() *redis.Client {
-	if redisClient == nil {
-		ConnectRedis()
-	}
 	return redisClient
 }

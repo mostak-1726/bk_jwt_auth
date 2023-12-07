@@ -4,7 +4,7 @@ import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
-	"github.com/mostak-1726/bk_jwt_auth/config"
+	"github.com/mostak-1726/bk_jwt_auth/conn"
 	"github.com/mostak-1726/bk_jwt_auth/service"
 	"github.com/mostak-1726/bk_jwt_auth/type"
 	"net/http"
@@ -16,10 +16,9 @@ type CapAuthIntegrator struct {
 	Password                string
 	Request                 _type.AuthTokenRequest
 	AuthVerifyReq           _type.AuthTokenVerifyRequest
-	JwtTokenExpirySecrete   string
+	JwtTokenSecrete         string
 	JwtTokenExpiryInSeconds int
 	TestCustomerAppToken    string
-	RedisConfig             config.RedisConfig
 }
 
 func (ci *CapAuthIntegrator) GenerateAuthToken(c echo.Context) error {
@@ -77,7 +76,7 @@ func (ci *CapAuthIntegrator) VerifyAuthToken(c echo.Context) error {
 	expiresAt := time.Now().Add(time.Duration(jte) * time.Second)
 
 	if ci.TestCustomerAppToken != "" && ci.TestCustomerAppToken == ci.AuthVerifyReq.Token {
-		return verifyTestAuthToken(c, ci.AuthVerifyReq, expiresAt, ci.JwtTokenExpirySecrete)
+		return verifyTestAuthToken(c, ci.AuthVerifyReq, expiresAt, ci.JwtTokenSecrete)
 	}
 
 	vt := service.VerifyAuthTokenService(ci.AuthVerifyReq.Token)
@@ -89,7 +88,7 @@ func (ci *CapAuthIntegrator) VerifyAuthToken(c echo.Context) error {
 	}
 
 	wNumber := service.GetWalletNumberAndRemoveToken(ci.AuthVerifyReq.Token)
-	token, er := service.GenerateJwt(wNumber, expiresAt, ci.JwtTokenExpirySecrete)
+	token, er := service.GenerateJwt(wNumber, expiresAt, ci.JwtTokenSecrete)
 	if er != nil {
 		log.Error("Failed to generate jwt token", er)
 		return c.JSON(http.StatusBadRequest, _type.Response{
@@ -143,12 +142,13 @@ func verifyTestAuthToken(c echo.Context, req _type.AuthTokenVerifyRequest, expir
 	})
 }
 
-func NewCapAuthIntegrator(userName, password string, expiryInSec int, testToken, secrete string) CapAuthIntegrator {
+func NewCapAuthIntegrator(config _type.Config) CapAuthIntegrator {
+	conn.ConnectRedis(config.RedisConfig)
 	return CapAuthIntegrator{
-		UserName:                userName,
-		Password:                password,
-		JwtTokenExpiryInSeconds: expiryInSec,
-		TestCustomerAppToken:    testToken,
-		JwtTokenExpirySecrete:   secrete,
+		UserName:                config.UserName,
+		Password:                config.Password,
+		JwtTokenExpiryInSeconds: config.ExpiryInSec,
+		TestCustomerAppToken:    config.TestCustomerAppToken,
+		JwtTokenSecrete:         config.JwtTokenSecrete,
 	}
 }

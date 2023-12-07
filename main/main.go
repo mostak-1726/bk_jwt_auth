@@ -7,16 +7,13 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	auth "github.com/mostak-1726/bk_jwt_auth"
-	"github.com/mostak-1726/bk_jwt_auth/config"
-	"github.com/mostak-1726/bk_jwt_auth/conn"
+	_type "github.com/mostak-1726/bk_jwt_auth/type"
 	"golang.org/x/exp/slices"
 	"net/http"
 )
 
 func main() {
 	var e = echo.New()
-	config.LoadConfig()
-	conn.ConnectRedis()
 	registerRoutes(e)
 	// echo middlewares
 	e.Use(middleware.CORS())
@@ -38,7 +35,7 @@ func getEchoJwtConfig() echojwt.Config {
 		Skipper: func(c echo.Context) bool {
 			route := []string{
 				"/bkash/auth",
-				"bkash/auth/verify",
+				"/bkash/auth/verify",
 			}
 			return slices.Contains(route, c.Request().URL.Path)
 		},
@@ -56,9 +53,23 @@ func getEchoJwtConfig() echojwt.Config {
 	}
 }
 func registerRoutes(e *echo.Echo) {
-	config.LoadConfig()
-	conn.ConnectRedis()
-	handler := auth.NewCapAuthIntegrator("mostak", "12345", 3600, "14580760-b5d9-42d7-aa3a-51d20caeff6a", "testSecret")
+	conf := _type.RedisConfig{
+		Host: "127.0.0.1",
+		Port: "6379",
+		Pass: "secret_redis",
+		Db:   1,
+		Ttl:  3600,
+	}
+	//conn.ConnectRedis(conf)
+	c := _type.Config{
+		UserName:             "mostak",
+		Password:             "12345",
+		ExpiryInSec:          3600,
+		TestCustomerAppToken: "14580760-b5d9-42d7-aa3a-51d20caeff6a",
+		JwtTokenSecrete:      "testSecret",
+		RedisConfig:          conf,
+	}
+	handler := auth.NewCapAuthIntegrator(c)
 	e.POST("/bkash/auth", handler.GenerateAuthToken)
 	e.POST("/bkash/auth/verify", handler.VerifyAuthToken)
 

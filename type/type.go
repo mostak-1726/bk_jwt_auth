@@ -44,3 +44,19 @@ func (q AuthTokenVerifyRequest) Validate() error {
 		v.Field(&q.Token, v.Required),
 	)
 }
+
+type RedisConfig struct {
+	Host string
+	Port string
+	Pass string
+	Db   int
+	Ttl  int // seconds
+}
+type Config struct {
+	UserName             string
+	Password             string
+	ExpiryInSec          int
+	JwtTokenSecrete      string
+	TestCustomerAppToken string
+	RedisConfig          RedisConfig
+}
