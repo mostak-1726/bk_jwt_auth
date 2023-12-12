@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/go-redis/redis"
 	"github.com/golang-jwt/jwt/v5"
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
@@ -52,13 +53,12 @@ func getEchoJwtConfig() echojwt.Config {
 	}
 }
 func registerRoutes(e *echo.Echo) {
-	conf := auth.RedisConfig{
-		Host: "127.0.0.1",
-		Port: "6379",
-		Pass: "secret_redis",
-		Db:   1,
-		Ttl:  3600,
-	}
+
+	redisClient := redis.NewClient(&redis.Options{
+		Addr:     "127.0.0.1:6379",
+		Password: "secret_redis",
+		DB:       1,
+	})
 	//conn.connectRedis(conf)
 	c := auth.Config{
 		UserName:             "mostak",
@@ -66,7 +66,7 @@ func registerRoutes(e *echo.Echo) {
 		ExpiryInSec:          3600,
 		TestCustomerAppToken: "14580760-b5d9-42d7-aa3a-51d20caeff6a",
 		JwtTokenSecret:       "testSecret",
-		RedisClient:          conf,
+		RedisClient:          redisClient,
 	}
 	handler := auth.NewCapAuthIntegrator(c)
 	e.POST("/bkash/auth", handler.GenerateAuthToken)

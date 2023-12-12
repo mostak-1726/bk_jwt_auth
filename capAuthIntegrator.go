@@ -14,7 +14,7 @@ type CapAuthIntegrator struct {
 	Password                string
 	Request                 AuthTokenRequest
 	AuthVerifyReq           AuthTokenVerifyRequest
-	JwtTokenSecrete         string
+	JwtTokenSecret          string
 	JwtTokenExpiryInSeconds int
 	TestCustomerAppToken    string
 	RedisClient             *redis.Client
@@ -75,7 +75,7 @@ func (ci *CapAuthIntegrator) VerifyAuthToken(c echo.Context) error {
 	expiresAt := time.Now().Add(time.Duration(jte) * time.Second)
 
 	if ci.TestCustomerAppToken != "" && ci.TestCustomerAppToken == ci.AuthVerifyReq.Token {
-		return verifyTestAuthToken(c, ci.AuthVerifyReq, expiresAt, ci.JwtTokenSecrete)
+		return verifyTestAuthToken(c, ci.AuthVerifyReq, expiresAt, ci.JwtTokenSecret)
 	}
 
 	vt := verifyAuthTokenService(ci.AuthVerifyReq.Token)
@@ -87,7 +87,7 @@ func (ci *CapAuthIntegrator) VerifyAuthToken(c echo.Context) error {
 	}
 
 	wNumber := getWalletNumberAndRemoveToken(ci.AuthVerifyReq.Token)
-	token, er := generateJwt(wNumber, expiresAt, ci.JwtTokenSecrete)
+	token, er := generateJwt(wNumber, expiresAt, ci.JwtTokenSecret)
 	if er != nil {
 		log.Error("Failed to generate jwt token", er)
 		return c.JSON(http.StatusBadRequest, Response{
@@ -148,6 +148,6 @@ func NewCapAuthIntegrator(config Config) CapAuthIntegrator {
 		Password:                config.Password,
 		JwtTokenExpiryInSeconds: config.ExpiryInSec,
 		TestCustomerAppToken:    config.TestCustomerAppToken,
-		JwtTokenSecrete:         config.JwtTokenSecret,
+		JwtTokenSecret:          config.JwtTokenSecret,
 	}
 }
