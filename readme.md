@@ -1,7 +1,7 @@
 # Echo JWT Auth Integrator
-This package builds on JWT authentication plugin and echo framework. It exposes two methods - GenerateAuthToken and VerifyAuthToken
-GenerateAuthToken method verifies the requested username and password against the configured username and password and returns an id_token 
-VerifyAuthToken method verifies the generated previously and provides jwtToken for further communication
+This package builds on JWT authentication plugin and echo framework. It exposes two methods - GenerateAuthToken and VerifyAuthToken.
+GenerateAuthToken method verifies the requested username and password against the configured username and password and returns an id_token. 
+VerifyAuthToken method verifies the token generated previously and provides jwtToken for further communication
 
 ## Installation
 To Install run the following command -  
@@ -24,10 +24,10 @@ c := cap_auth.Config{
 }
 handler := auth.NewCapAuthIntegrator(c)
 e := echo.New()
-e.POST("/bkash/auth", handler.GenerateAuthToken)
-e.POST("/bkash/auth/verify", handler.VerifyAuthToken)
+e.POST("/auth", handler.GenerateAuthToken)
+e.POST("/auth/verify", handler.VerifyAuthToken)
 ```
-/bksh/auth endpoint needs to request with following params - 
+/auth endpoint needs to request with the following params - 
 ```json
 
 {
@@ -37,7 +37,7 @@ e.POST("/bkash/auth/verify", handler.VerifyAuthToken)
 }
 ```
 
-/bkash/auth/verify endpoint needs to request with following params - 
+/auth/verify endpoint needs to request with the following params - 
 ```json
 {
     "token": "6c843576-5ac0-4ba9-8f44-6265d3e18039",
