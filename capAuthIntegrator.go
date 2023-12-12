@@ -148,6 +148,6 @@ func NewCapAuthIntegrator(config Config) CapAuthIntegrator {
 		Password:                config.Password,
 		JwtTokenExpiryInSeconds: config.ExpiryInSec,
 		TestCustomerAppToken:    config.TestCustomerAppToken,
-		JwtTokenSecrete:         config.JwtTokenSecrete,
+		JwtTokenSecrete:         config.JwtTokenSecret,
 	}
 }

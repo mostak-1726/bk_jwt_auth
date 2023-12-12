@@ -50,7 +50,7 @@ type Config struct {
 	UserName             string
 	Password             string
 	ExpiryInSec          int
-	JwtTokenSecrete      string
+	JwtTokenSecret       string
 	TestCustomerAppToken string
 	RedisClient          *redis.Client
 }
