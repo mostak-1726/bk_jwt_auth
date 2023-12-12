@@ -19,7 +19,7 @@ c := cap_auth.Config{
         Password:             "12345",
         ExpiryInSec:          3600,
         TestCustomerAppToken: "14580760-b5d9-42d7-aa3a-51d20caeff6a",
-        JwtTokenSecrete:      "testSecret",
+        JwtTokenSecret:      "testSecret",
         RedisClient:          *redis.Client,
 }
 handler := auth.NewCapAuthIntegrator(c)
